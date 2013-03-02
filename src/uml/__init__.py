@@ -6,4 +6,4 @@ Created on 02-03-2013
 @author: Marcin
 '''
 
-__all__ = []
+__all__ = ["sequence"]

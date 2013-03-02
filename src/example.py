@@ -7,19 +7,22 @@ Created on 01-03-2013
 @author: Marcin
 '''
 
-import uml
+import uml.sequence
 
 def main():
-    diag = uml.Diagram()
+    diag = uml.sequence.Diagram()
+
     o = diag.object("o:Toolkit")
     p = diag.pobject("p:Peer")
     diag.step()
 
     o.active()
     diag.step()
+
     o.active()
     o.sendTo(o, "callbackLoop()")
     o.inactive()
+
     o.create(p)
     o.sendTo(p, "handleExpose()")
     p.active()
@@ -27,6 +30,7 @@ def main():
     p.inactive()
     o.destroy(p)
     o.inactive()
+
     diag.step();
     diag.printOut();
 
