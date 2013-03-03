@@ -21,15 +21,3 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 # 
-
-'''
-Created on 03-03-2013
-
-@author: Marcin Zdun
-'''
-
-from _svg import SvgPrinter
-
-__all__ = ["DefaultPrinter", "SvgPrinter"]
-
-def DefaultPrinter(): return SvgPrinter()
