@@ -13,9 +13,10 @@ class Activity:
     def length(self):
         return self.finish - self.start
 
-    def printOut(self):
-        print '      <use xlink:href="#activity%s" transform="translate(%s, %s)"/>' % \
-            (self.length(), self.level * self.parent.parent.config.STEP_OFFSET, self.start)
+    def printOut(self, canvas):
+        canvas.ref(self.level * self.parent.parent.config.STEP_OFFSET,
+                   self.start,
+                   "activity%s" % self.length())
 
     def __str__(self):
         if self.level == 0: return repr([self.start, self.finish])

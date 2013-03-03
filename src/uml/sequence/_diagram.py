@@ -9,7 +9,6 @@ Created on 02-03-2013
 from sys import stdout
 import base, printer
 import _object, _message
-import _utils
 
 class Diagram(base.Diagram):
     def __init__(self):
@@ -44,7 +43,7 @@ class Diagram(base.Diagram):
             self.step()
         return m
 
-    def printOut(self):
+    def printOut(self, prn = None):
         #find the lifeline markers needed
         lifeline_lengths = {}
         activity_lengths = {}
@@ -62,22 +61,34 @@ class Diagram(base.Diagram):
             for activity in obj.activity:
                 activity_lengths[activity.length()] = 1
 
-        prn = printer.DefaultPrinter()
+        if prn is None:
+            prn = printer.DefaultPrinter()
 
         #extend the definition list
         defs = prn.defs()
         defs.rectangle("object", 0, 0, self.config.OBJECT_WIDTH, self.config.OBJECT_HEIGHT)
         if self.timeline in lifeline_lengths:
-            defs.line("lifeline", float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT, 0, self.timeline, [5, 5])
+            defs.line("lifeline",
+                      float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT,
+                      0, self.timeline - self.config.OBJECT_HEIGHT/2,
+                      "lifeline")
         for length in lifeline_lengths:
             if length == self.timeline: continue
-            defs.line("lifeline%s" % length, float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT, 0, length, [5, 5])
+            defs.line("lifeline%s" % length,
+                      float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT,
+                      0, length - self.config.OBJECT_HEIGHT/2,
+                      "lifeline")
         for length in sorted(activity_lengths.keys()):
-            defs.rectangle("activity%s" % length, 0, 0, self.config.STEP_WIDTH, length)
+            defs.rectangle("activity%s" % length,
+                           float(self.config.OBJECT_WIDTH)/2 - float(self.config.STEP_WIDTH)/2,
+                           self.config.OBJECT_HEIGHT/2,
+                           self.config.STEP_WIDTH, length)
 
         if destroyed_needed:
-            defs += _utils.def_destroy(self.config)
-            
+            destroy = defs.canvas("destroy", float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT/2, "destroy")
+            destroy.line(-10, -10, 20, 20)
+            destroy.line(10, -10, -20, 20)
+
         for _def in (("asyncSignalArrow", "line"), ("signalArrow", "block")):
             defs.poly(_def[0], -10, -3, _def[1]).lineTo(0,0).lineTo(-10, 3)
 
@@ -86,14 +97,6 @@ class Diagram(base.Diagram):
                             self.config.OBJECT_HEIGHT + self.timeline)
         for obj in self.objects:
             obj.printOut(canvas)
+        for obj in self.objects:
+            obj.printOutMessages(canvas)
         prn.output(stdout)
-
-        #write the contents of the document
-        #print _utils.DOC_START % (float(doc_width)/72, float(doc_height)/72, doc_width, doc_height, defs)
-        #print '  <g transform="translate(%s, %s)">' % (self.config.PAGE_MARGIN, self.config.PAGE_MARGIN)
-        #for obj in self.objects:
-        #    obj.printOut()
-        #for obj in self.objects:
-        #    obj.printOutMessages()
-        #print '  </g>'
-        #print _utils.DOC_END

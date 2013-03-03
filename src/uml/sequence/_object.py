@@ -6,7 +6,6 @@ Created on 02-03-2013
 @author: Marcin
 '''
 import _activity
-from _utils import xmlize
 
 class Object:
     def __init__(self, parent, index, name, alive):
@@ -63,10 +62,6 @@ class Object:
                     max_level = activity.level
         return max_level
 
-    def object_label(self, offY = 0):
-        return '      <text class="object" transform="translate(%.1f,%s)">%s</text>' % \
-            (float(self._config().OBJECT_WIDTH)/2, offY + self._config().OBJECT_HEIGHT - 12, xmlize(self.name))
-
     def printOut(self, parent_canvas):
         if self.constructed_on == -1: return
 
@@ -79,23 +74,20 @@ class Object:
         
         canvas = parent_canvas.canvas(self.index * self._config().OBJECT_DISTANCE,
                                       self.constructed_on)
+        canvas.ref(0, 0, "lifeline%s" % lifeline_suffix)
+        canvas.ref(0, 0, "object")
 
-        print '      <use xlink:href="#lifeline%s"/>' % lifeline_suffix
-        print '      <use xlink:href="#object"/>'
-        print self.object_label();
+        canvas.text(float(self._config().OBJECT_WIDTH)/2, self._config().OBJECT_HEIGHT - 12, self.name, "object")
 
         while len(self.activity_stack) > 0: self.inactive()
         activity = sorted(self.activity)
         for a in activity:
-            a.printOut()
+            a.printOut(canvas)
         if self.destroyed_on != -1:
-            print '      <use xlink:href="#destroy" transform="translate(0, %s)"/>' % \
-                (self.destroyed_on - self.constructed_on)
+            canvas.ref(0, self.destroyed_on - self.constructed_on, "destroy")
 
-    def printOutMessages(self):
-        print '    <g transform="translate(%.1f)">' % \
-            (float(self._config().OBJECT_WIDTH)/2 + self.index * self._config().OBJECT_DISTANCE)
+    def printOutMessages(self, parent_canvas):
+        canvas = parent_canvas.canvas(float(self._config().OBJECT_WIDTH)/2 + self.index * self._config().OBJECT_DISTANCE, 0)
 
         for msg in self.messages:
-            msg.printOut()
-        print '    </g>'
+            msg.printOut(canvas)

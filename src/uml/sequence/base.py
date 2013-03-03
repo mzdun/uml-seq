@@ -20,6 +20,8 @@ class Diagram:
     def sync(self): pass
     def step(self): pass
 
+    def printOut(self, prn = None): pass
+
 class Object:
     def active(self): pass
     def inactive(self): pass
