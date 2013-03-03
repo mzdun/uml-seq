@@ -6,9 +6,9 @@ Created on 02-03-2013
 @author: Marcin
 '''
 
-import base
-import _object
-import _message
+from sys import stdout
+import base, printer
+import _object, _message
 import _utils
 
 class Diagram(base.Diagram):
@@ -45,9 +45,6 @@ class Diagram(base.Diagram):
         return m
 
     def printOut(self):
-        doc_width = (len(self.objects) - 1) * self.config.OBJECT_DISTANCE + self.config.PAGE_MARGIN*2 + self.config.OBJECT_WIDTH
-        doc_height = self.config.OBJECT_HEIGHT + self.timeline + self.config.PAGE_MARGIN*2
-
         #find the lifeline markers needed
         lifeline_lengths = {}
         activity_lengths = {}
@@ -65,25 +62,38 @@ class Diagram(base.Diagram):
             for activity in obj.activity:
                 activity_lengths[activity.length()] = 1
 
+        prn = printer.DefaultPrinter()
+
         #extend the definition list
-        defs = _utils.def_object(self.config)
+        defs = prn.defs()
+        defs.rectangle("object", 0, 0, self.config.OBJECT_WIDTH, self.config.OBJECT_HEIGHT)
         if self.timeline in lifeline_lengths:
-            defs += _utils.def_lifeline(self.config, self.timeline)
+            defs.line("lifeline", float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT, 0, self.timeline, [5, 5])
         for length in lifeline_lengths:
             if length == self.timeline: continue
-            defs += _utils.def_lifeline(self.config, length, length)
+            defs.line("lifeline%s" % length, float(self.config.OBJECT_WIDTH)/2, self.config.OBJECT_HEIGHT, 0, length, [5, 5])
         for length in sorted(activity_lengths.keys()):
-            defs += _utils.def_activity(self.config, length)
-        
+            defs.rectangle("activity%s" % length, 0, 0, self.config.STEP_WIDTH, length)
+
         if destroyed_needed:
             defs += _utils.def_destroy(self.config)
+            
+        for _def in (("asyncSignalArrow", "line"), ("signalArrow", "block")):
+            defs.poly(_def[0], -10, -3, _def[1]).lineTo(0,0).lineTo(-10, 3)
+
+        canvas = prn.canvas(self.config.PAGE_MARGIN,
+                            (len(self.objects) - 1) * self.config.OBJECT_DISTANCE + self.config.OBJECT_WIDTH,
+                            self.config.OBJECT_HEIGHT + self.timeline)
+        for obj in self.objects:
+            obj.printOut(canvas)
+        prn.output(stdout)
 
         #write the contents of the document
-        print _utils.DOC_START % (float(doc_width)/72, float(doc_height)/72, doc_width, doc_height, defs)
-        print '  <g transform="translate(%s, %s)">' % (self.config.PAGE_MARGIN, self.config.PAGE_MARGIN)
-        for obj in self.objects:
-            obj.printOut()
-        for obj in self.objects:
-            obj.printOutMessages()
-        print '  </g>'
-        print _utils.DOC_END
+        #print _utils.DOC_START % (float(doc_width)/72, float(doc_height)/72, doc_width, doc_height, defs)
+        #print '  <g transform="translate(%s, %s)">' % (self.config.PAGE_MARGIN, self.config.PAGE_MARGIN)
+        #for obj in self.objects:
+        #    obj.printOut()
+        #for obj in self.objects:
+        #    obj.printOutMessages()
+        #print '  </g>'
+        #print _utils.DOC_END

@@ -67,7 +67,7 @@ class Object:
         return '      <text class="object" transform="translate(%.1f,%s)">%s</text>' % \
             (float(self._config().OBJECT_WIDTH)/2, offY + self._config().OBJECT_HEIGHT - 12, xmlize(self.name))
 
-    def printOut(self):
+    def printOut(self, parent_canvas):
         if self.constructed_on == -1: return
 
         lifeline_suffix = ""
@@ -76,20 +76,9 @@ class Object:
             if length == -1: length = self.parent.now()
             length -= self.constructed_on
             lifeline_suffix = str(length)
-
-        translate = ""
-        start = self.constructed_on
-        if self.index != 0 or self.constructed_on > 0:
-            if self.index == 0:
-                translate = "0"
-            else:
-                translate = "%s" % (self.index * self._config().OBJECT_DISTANCE)
-            if self.constructed_on > 0:
-                translate = "%s, %s" % (translate, start)
-        if translate == "":
-            print '    <g>'
-        else:
-            print '    <g transform="translate(%s)">' % translate
+        
+        canvas = parent_canvas.canvas(self.index * self._config().OBJECT_DISTANCE,
+                                      self.constructed_on)
 
         print '      <use xlink:href="#lifeline%s"/>' % lifeline_suffix
         print '      <use xlink:href="#object"/>'
@@ -102,8 +91,6 @@ class Object:
         if self.destroyed_on != -1:
             print '      <use xlink:href="#destroy" transform="translate(0, %s)"/>' % \
                 (self.destroyed_on - self.constructed_on)
-
-        print '    </g>'
 
     def printOutMessages(self):
         print '    <g transform="translate(%.1f)">' % \
