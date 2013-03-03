@@ -3,6 +3,8 @@ Created on 03-03-2013
 
 @author: Marcin
 '''
-import _svg
+from _svg import SvgPrinter
 
-def DefaultPrinter(): return _svg.SvgPrinter()
+__all__ = ["DefaultPrinter", "SvgPrinter"]
+
+def DefaultPrinter(): return SvgPrinter()

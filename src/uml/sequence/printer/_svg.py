@@ -52,7 +52,6 @@ class _SvgNode:
         for attr in self._attr:
             out.write('%s%s="%s"' % (pre, attr[0], xmlize(attr[1])))
 
-        if attr_len > 1: out.write(pre)
         if self._text is None and len(self._children) == 0:
             out.write("/>\n")
             return
@@ -222,7 +221,7 @@ class SvgPredefines(Predefines):
     def _node(self):
         node= _SvgNode("defs")
         for name in sorted(self.defs.keys()):
-            node.add(self.defs[name]._node().attr("xml:id", name))
+            node.add(self.defs[name]._node().attr("id", name))
         return node
 
 class SvgCanvas(Canvas, _Graphics):
