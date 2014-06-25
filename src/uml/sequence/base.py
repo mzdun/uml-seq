@@ -45,7 +45,7 @@ class Diagram:
         return None
     def pobject(self, name):
         return None
-    def block(self, name, left, right):
+    def block(self, name, left, right, expr = None):
         return None
 
     def async(self):
@@ -73,5 +73,7 @@ class Object:
         return None
 
 class Block:
+    def alt(self, expr = None):
+        pass
     def close(self):
         pass

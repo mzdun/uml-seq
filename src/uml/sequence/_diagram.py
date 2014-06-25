@@ -53,8 +53,8 @@ class Diagram(base.Diagram):
         self.objects.append(o)
         return o
 
-    def block(self, name, left, right):
-        b = _block.Block(self, left.index, right.index, name)
+    def block(self, name, left, right, expr = None):
+        b = _block.Block(self, left.index, right.index, name, expr)
         self.blocks.append(b)
         return b
 

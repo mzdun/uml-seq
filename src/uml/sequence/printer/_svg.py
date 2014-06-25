@@ -355,7 +355,13 @@ class SvgPrinter(Printer):
                  .decl("font-size", "8pt")\
                  .decl("stroke", "none")\
                  .decl("text-anchor", "middle")\
-                 .decl("fill", "#444"))
+                 .decl("fill", "#444"))\
+            .add(Rule("text.optalt_expr")\
+                 .decl("font-family", "sans-serif")\
+                 .decl("font-size", "8pt")\
+                 .decl("stroke", "none")\
+                 .decl("text-anchor", "start")\
+                 .decl("fill", "#333"))
 
         self._defs = SvgPredefines()
         self._canvas = SvgCanvas(0, 0)

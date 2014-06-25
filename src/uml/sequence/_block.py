@@ -31,15 +31,20 @@ Created on 02-03-2013
 '''
 
 class Block:
-    def __init__(self, parent, indexLeft, indexRight, name):
+    def __init__(self, parent, indexLeft, indexRight, name, expr):
         self.parent = parent
         self.indexLeft = indexLeft
         self.indexRight = indexRight
         self.constructed_on = self.parent.now()
         self.destroyed_on = -1
         self.name = name
+        self.expr = expr
+        self.alts = []
 
     def _config(self): return self.parent.config
+
+    def alt(self, expr = None):
+        self.alts.append( (self.parent.now() - self._config().STEP_HEIGHT, expr) )
 
     def close(self):
         self.destroyed_on = self.parent.now()
@@ -58,6 +63,13 @@ class Block:
             .lineTo(self._config().LABEL_WIDTH + self._config().LABEL_CORNER, 0)\
             .lineTo(0, 0)
 
-        canvas.rectangle(0, 0, (self.indexRight - self.indexLeft + 1) * self._config().OBJECT_DISTANCE, length, "optalt")
+        width = (self.indexRight - self.indexLeft + 1) * self._config().OBJECT_DISTANCE
+        canvas.rectangle(0, 0, width, length, "optalt")
         canvas.text(float(self._config().LABEL_WIDTH)/2, self._config().LABEL_HEIGHT - 8, self.name, "optalt")
-    
+        if self.expr is not None:
+            canvas.text(self._config().LABEL_WIDTH * 7 / 5, self._config().LABEL_HEIGHT - 8, self.expr, "optalt_expr")
+
+        for when, expr in self.alts:
+            canvas.line(0, when, width, 0, "optalt")
+            if expr is not None:
+                canvas.text(self._config().LABEL_WIDTH / 5, when + self._config().LABEL_HEIGHT - 8, expr, "optalt_expr")
