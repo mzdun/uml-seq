@@ -54,6 +54,8 @@ class Diagram:
         pass
     def step(self):
         pass
+    def stepBack(self):
+        pass
 
     def printOut(self, prn = None):
         pass
@@ -64,13 +66,19 @@ class Object:
     def inactive(self):
         pass
     def sendTo(self, oth, name = None):
-        return None
+        pass
+    def syncSendTo(self, oth, name = None):
+        pass
+    def asyncSendTo(self, oth, name = None):
+        pass
     def returnTo(self, oth, name = None):
-        return None
+        pass
     def create(self, oth, proto = None):
-        return None
+        pass
     def destroy(self, oth, proto = None):
-        return None
+        pass
+    def suicide(self):
+        pass
 
 class Block:
     def alt(self, expr = None):

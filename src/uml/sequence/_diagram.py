@@ -61,17 +61,27 @@ class Diagram(base.Diagram):
     def async(self): self.is_async = True
     def sync(self): self.is_async = False
     def step(self): self.timeline += self.config.STEP_HEIGHT
+    def stepBack(self): self.timeline -= self.config.STEP_HEIGHT
     def hstep(self): self.timeline += self.config.STEP_HEIGHT/2
     def now(self): return self.timeline
 
-    def addMessage(self, isReturn, start, finish, name):
+    def __message(self, isReturn, start, finish, name, isAsync):
         self.step()
         when = self.timeline
-        m = _message.Message(self.is_async, isReturn, when, start, finish, name)
+        m = _message.Message(isAsync, isReturn, when, start, finish, name)
         self.messages.append(m)
         if start.index == finish.index:
             self.step()
         return m
+
+    def addMessage(self, isReturn, start, finish, name):
+        return self.__message(isReturn, start, finish, name, self.is_async)
+
+    def syncAddMessage(self, isReturn, start, finish, name):
+        return self.__message(isReturn, start, finish, name, False)
+
+    def asyncAddMessage(self, isReturn, start, finish, name):
+        return self.__message(isReturn, start, finish, name, True)
 
     def printOut(self, prn = None):
         #find the lifeline markers needed

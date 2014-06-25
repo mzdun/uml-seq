@@ -55,15 +55,24 @@ class Object(base.Object):
         level -= 1
         start = self.activity_stack[level]
         finish = self.parent.now()
+        self.activity_stack = self.activity_stack[:level]
+
         if start == finish: return
         if self.constructed_on > 0:
             start -= self.constructed_on
             finish -= self.constructed_on
-        self.activity_stack = self.activity_stack[:level]
         self.activity.append(_activity.Activity(self, start, finish, level))
 
     def sendTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(False, self, oth, name))
+        oth.active()
+
+    def syncSendTo(self, oth, name = None):
+        self.messages.append(self.parent.syncAddMessage(False, self, oth, name))
+        oth.active()
+
+    def asyncSendTo(self, oth, name = None):
+        self.messages.append(self.parent.asyncAddMessage(False, self, oth, name))
         oth.active()
 
     def returnTo(self, oth, name = None):
@@ -72,7 +81,7 @@ class Object(base.Object):
 
     def create(self, oth, proto = None):
         if proto is None: proto = "create"
-        self.sendTo(oth, "«%s»" % proto)
+        self.messages.append(self.parent.addMessage(False, self, oth, "«%s»" % proto))
         oth.constructed_on = self.parent.now()
         self.parent.hstep();
 
@@ -80,6 +89,10 @@ class Object(base.Object):
         if proto is None: proto = "destroy"
         self.messages.append(self.parent.addMessage(False, self, oth, "«%s»" % proto))
         oth.destroyed_on = self.parent.now()
+
+    def suicide(self):
+        self.inactive()
+        self.destroyed_on = self.parent.now()
 
     def level_at(self, timestamp):
         max_level = 0
