@@ -344,7 +344,18 @@ class SvgPrinter(Printer):
                  .decl("stroke", "black")\
                  .decl("stroke-width", "2")\
                  .decl("stroke-linecap", "butt")\
-                 .decl("fill", "none"))
+                 .decl("fill", "none"))\
+            .add(Rule(".optalt")\
+                 .decl("stroke", "gray")\
+                 .decl("stroke-linecap", "butt")\
+                 .decl("fill", "none"))\
+            .add(Rule("polyline.optalt").decl("fill", "#eee"))\
+            .add(Rule("text.optalt")\
+                 .decl("font-family", "sans-serif")\
+                 .decl("font-size", "8pt")\
+                 .decl("stroke", "none")\
+                 .decl("text-anchor", "middle")\
+                 .decl("fill", "#444"))
 
         self._defs = SvgPredefines()
         self._canvas = SvgCanvas(0, 0)

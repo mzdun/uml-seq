@@ -30,9 +30,9 @@ Created on 02-03-2013
 @author: Marcin Zdun
 '''
 
-import _activity
+import _activity, base
 
-class Object:
+class Object(base.Object):
     def __init__(self, parent, index, name, alive):
         self.parent = parent
         self.index = index

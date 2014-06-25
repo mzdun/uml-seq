@@ -32,11 +32,12 @@ Created on 02-03-2013
 
 from sys import stdout
 import base, printer
-import _object, _message
+import _object, _block, _message
 
 class Diagram(base.Diagram):
     def __init__(self):
         self.objects = []
+        self.blocks = []
         self.messages = []
         self.timeline = 0
         self.is_async = False
@@ -51,6 +52,11 @@ class Diagram(base.Diagram):
         o = _object.Object(self, len(self.objects), name, False)
         self.objects.append(o)
         return o
+
+    def block(self, name, left, right):
+        b = _block.Block(self, left.index, right.index, name)
+        self.blocks.append(b)
+        return b
 
     def async(self): self.is_async = True
     def sync(self): self.is_async = False
@@ -123,4 +129,6 @@ class Diagram(base.Diagram):
             obj.printOut(canvas)
         for obj in self.objects:
             obj.printOutMessages(canvas)
+        for block in self.blocks:
+            block.printOut(canvas)
         prn.output(stdout)

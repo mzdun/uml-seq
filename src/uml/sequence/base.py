@@ -33,6 +33,9 @@ class Config:
     OBJECT_DISTANCE = 125
     OBJECT_WIDTH = 75
     OBJECT_HEIGHT = 30
+    LABEL_WIDTH = 50
+    LABEL_HEIGHT = 20
+    LABEL_CORNER = 10
     STEP_WIDTH = 10
     STEP_HEIGHT = 25
     STEP_OFFSET = 5
@@ -41,6 +44,8 @@ class Diagram:
     def object(self, name):
         return None
     def pobject(self, name):
+        return None
+    def block(self, name, left, right):
         return None
 
     def async(self):
@@ -66,3 +71,7 @@ class Object:
         return None
     def destroy(self, oth):
         return None
+
+class Block:
+    def close(self):
+        pass
