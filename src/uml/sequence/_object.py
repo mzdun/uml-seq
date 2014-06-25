@@ -68,13 +68,15 @@ class Object(base.Object):
     def returnTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(True, self, oth, name))
 
-    def create(self, oth):
-        self.sendTo(oth, "«create»")
+    def create(self, oth, proto = None):
+        if proto is None: proto = "create"
+        self.sendTo(oth, "«%s»" % proto)
         oth.constructed_on = self.parent.now()
         self.parent.hstep();
 
-    def destroy(self, oth):
-        self.sendTo(oth, "«destroy»")
+    def destroy(self, oth, proto = None):
+        if proto is None: proto = "destroy"
+        self.sendTo(oth, "«%s»" % proto)
         oth.destroyed_on = self.parent.now()
 
     def level_at(self, timestamp):

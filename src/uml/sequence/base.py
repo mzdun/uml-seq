@@ -67,9 +67,9 @@ class Object:
         return None
     def returnTo(self, oth, name = None):
         return None
-    def create(self, oth):
+    def create(self, oth, proto = None):
         return None
-    def destroy(self, oth):
+    def destroy(self, oth, proto = None):
         return None
 
 class Block:
