@@ -64,9 +64,11 @@ class Object(base.Object):
 
     def sendTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(False, self, oth, name))
+        oth.active()
 
     def returnTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(True, self, oth, name))
+        self.inactive()
 
     def create(self, oth, proto = None):
         if proto is None: proto = "create"
@@ -76,7 +78,7 @@ class Object(base.Object):
 
     def destroy(self, oth, proto = None):
         if proto is None: proto = "destroy"
-        self.sendTo(oth, "«%s»" % proto)
+        self.messages.append(self.parent.addMessage(False, self, oth, "«%s»" % proto))
         oth.destroyed_on = self.parent.now()
 
     def level_at(self, timestamp):
