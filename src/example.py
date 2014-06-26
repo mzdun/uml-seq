@@ -43,15 +43,13 @@ def main():
     o.active()
     diag.step()
 
-    o.active()
     o.sendTo(o, "callbackLoop()")
+    diag.step()
     o.inactive()
 
     o.create(p)
     o.sendTo(p, "handleExpose()")
-    p.active()
     p.returnTo(o)
-    p.inactive()
     o.destroy(p)
     o.inactive()
 
