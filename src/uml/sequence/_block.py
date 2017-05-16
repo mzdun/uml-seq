@@ -30,6 +30,8 @@ Created on 02-03-2013
 @author: Marcin Zdun
 '''
 
+import _anchor
+
 class Block:
     def __init__(self, parent, indexLeft, indexRight, name, expr):
         self.parent = parent
@@ -39,15 +41,40 @@ class Block:
         self.destroyed_on = -1
         self.name = name
         self.expr = expr
+        self.is_opaque = False
+        self.tweaks = 0
+        self.left_tweaks = 0
         self.alts = []
 
     def _config(self): return self.parent.config
 
+    def opaque(self, op = True): self.is_opaque = op; return self
+    def longer(self, how_much = 1): self.tweaks += how_much; return self
+    def shorter(self, how_much = 1): self.tweaks -= how_much; return self
+    def sooner(self, how_much = 1): self.left_tweaks += how_much; return self
+    def later(self, how_much = 1): self.left_tweaks -= how_much; return self
+
     def alt(self, expr = None):
-        self.alts.append( (self.parent.now() - self._config().STEP_HEIGHT, expr) )
+        self.alts.append( (self.parent.now() + self._config().STEP_HEIGHT/2 - self.constructed_on, expr) )
 
     def close(self):
         self.destroyed_on = self.parent.now()
+
+    def getAnchor(self, index):
+        if self.constructed_on == -1: return
+        length = self.destroyed_on
+
+        if length == -1: length = self.parent.now()
+        length -= self.constructed_on
+
+        tweak_scale = self._config().OBJECT_DISTANCE / 20
+
+        x0 = self.indexRight * self._config().OBJECT_DISTANCE + self._config().OBJECT_WIDTH / 2
+        x = self.indexLeft * self._config().OBJECT_DISTANCE - float(self._config().OBJECT_DISTANCE - self._config().OBJECT_WIDTH) / 2 - tweak_scale * self.left_tweaks
+        y = self.constructed_on
+        w = (self.indexRight - self.indexLeft + 1) * self._config().OBJECT_DISTANCE + (self.tweaks + self.left_tweaks) * tweak_scale
+        h = length
+        return _anchor.boxAnchor(index, 4, x - x0, y, x - x0 + w, y + h)
 
     def printOut(self, parent_canvas):
         if self.constructed_on == -1: return
@@ -56,18 +83,25 @@ class Block:
         if length == -1: length = self.parent.now()
         length -= self.constructed_on
 
-        canvas = parent_canvas.canvas(self.indexLeft * self._config().OBJECT_DISTANCE - float(self._config().OBJECT_DISTANCE - self._config().OBJECT_WIDTH) / 2, self.constructed_on)
+        tweak_scale = self._config().OBJECT_DISTANCE / 20
+        width = (self.indexRight - self.indexLeft + 1) * self._config().OBJECT_DISTANCE + (self.tweaks + self.left_tweaks) * tweak_scale
+
+        canvas = parent_canvas.canvas(self.indexLeft * self._config().OBJECT_DISTANCE - float(self._config().OBJECT_DISTANCE - self._config().OBJECT_WIDTH) / 2 - tweak_scale * self.left_tweaks, self.constructed_on)
+
+        if self.is_opaque:
+            canvas.rectangle(0, 0, width, length, "opt-opaque")
+
         canvas.poly(0, self._config().LABEL_HEIGHT, "optalt")\
             .lineTo(self._config().LABEL_WIDTH, self._config().LABEL_HEIGHT)\
             .lineTo(self._config().LABEL_WIDTH + self._config().LABEL_CORNER, self._config().LABEL_HEIGHT - self._config().LABEL_CORNER)\
             .lineTo(self._config().LABEL_WIDTH + self._config().LABEL_CORNER, 0)\
             .lineTo(0, 0)
 
-        width = (self.indexRight - self.indexLeft + 1) * self._config().OBJECT_DISTANCE
         canvas.rectangle(0, 0, width, length, "optalt")
         canvas.text(float(self._config().LABEL_WIDTH)/2, self._config().LABEL_HEIGHT - 8, self.name, "optalt")
         if self.expr is not None:
-            canvas.text(self._config().LABEL_WIDTH * 7 / 5, self._config().LABEL_HEIGHT - 8, self.expr, "optalt_expr")
+            scale = 7 if self.is_opaque else 8
+            canvas.text(self._config().LABEL_WIDTH * scale / 5, self._config().LABEL_HEIGHT - 8, self.expr, "optalt_expr")
 
         for when, expr in self.alts:
             canvas.line(0, when, width, 0, "optalt")

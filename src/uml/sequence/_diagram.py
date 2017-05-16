@@ -30,15 +30,16 @@ Created on 02-03-2013
 @author: Marcin Zdun
 '''
 
-from sys import stdout
+from sys import stdout, stderr
 import base, printer
-import _object, _block, _message
+import _object, _block, _message, _comment
 
 class Diagram(base.Diagram):
     def __init__(self):
         self.objects = []
         self.blocks = []
         self.messages = []
+        self.comments = []
         self.timeline = 0
         self.is_async = False
         self.config = base.Config()
@@ -58,11 +59,17 @@ class Diagram(base.Diagram):
         self.blocks.append(b)
         return b
 
+    def comment(self, text, attach = None):
+        c = _comment.Comment(self, text, attach)
+        self.comments.append(c)
+        return c
+
     def async(self): self.is_async = True
     def sync(self): self.is_async = False
     def step(self): self.timeline += self.config.STEP_HEIGHT
     def stepBack(self): self.timeline -= self.config.STEP_HEIGHT
     def hstep(self): self.timeline += self.config.STEP_HEIGHT/2
+    def hstepBack(self): self.timeline -= self.config.STEP_HEIGHT/2
     def now(self): return self.timeline
 
     def __message(self, isReturn, start, finish, name, isAsync):
@@ -71,7 +78,10 @@ class Diagram(base.Diagram):
         m = _message.Message(isAsync, isReturn, when, start, finish, name)
         self.messages.append(m)
         if start.index == finish.index:
-            self.step()
+            if start == finish:
+                self.hstep()
+            else:
+                self.step()
         return m
 
     def addMessage(self, isReturn, start, finish, name):
@@ -83,7 +93,7 @@ class Diagram(base.Diagram):
     def asyncAddMessage(self, isReturn, start, finish, name):
         return self.__message(isReturn, start, finish, name, True)
 
-    def printOut(self, prn = None):
+    def printOut(self, prn = None, title = None):
         #find the lifeline markers needed
         lifeline_lengths = {}
         activity_lengths = {}
@@ -132,13 +142,29 @@ class Diagram(base.Diagram):
         for _def in (("asyncSignalArrow", "line"), ("signalArrow", "block")):
             defs.poly(_def[0], -10, -3, _def[1]).lineTo(0,0).lineTo(-10, 3)
 
+        canvas_width = (len(self.objects) - 1) * self.config.OBJECT_DISTANCE + self.config.OBJECT_WIDTH
+        title_width = canvas_width
+        max_lane = len(self.objects)
+
+        for comment in self.comments:
+            width = comment.width
+            lane = comment.lane
+            if lane < 0: lane = max_lane
+            extra = lane * self.config.OBJECT_DISTANCE + self.config.OBJECT_WIDTH + width
+            if extra > canvas_width:
+                canvas_width = extra
+
         canvas = prn.canvas(self.config.PAGE_MARGIN,
-                            (len(self.objects) - 1) * self.config.OBJECT_DISTANCE + self.config.OBJECT_WIDTH,
-                            self.config.OBJECT_HEIGHT + self.timeline)
+                            canvas_width, self.config.OBJECT_HEIGHT + self.timeline)
+
+        if title is not None:
+            canvas.title(title, title_width)
         for obj in self.objects:
             obj.printOut(canvas)
         for obj in self.objects:
             obj.printOutMessages(canvas)
         for block in self.blocks:
             block.printOut(canvas)
-        prn.output(stdout)
+        for comment in self.comments:
+            comment.printOut(canvas)
+        prn.output(stdout, title=title)

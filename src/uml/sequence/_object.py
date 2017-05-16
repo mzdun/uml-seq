@@ -43,6 +43,7 @@ class Object(base.Object):
         self.activity = []
         self.messages = []
         self.activity_stack = []
+        self.pending = None
 
     def _config(self): return self.parent.config
 
@@ -62,37 +63,51 @@ class Object(base.Object):
             start -= self.constructed_on
             finish -= self.constructed_on
         self.activity.append(_activity.Activity(self, start, finish, level))
+        if self.pending is not None:
+            self.pending.attachTo(self.activity[-1])
+            self.pending = None
+        return self.activity[-1]
 
     def sendTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(False, self, oth, name))
         oth.active()
+        return self.messages[-1]
 
     def syncSendTo(self, oth, name = None):
         self.messages.append(self.parent.syncAddMessage(False, self, oth, name))
         oth.active()
+        return self.messages[-1]
 
     def asyncSendTo(self, oth, name = None):
         self.messages.append(self.parent.asyncAddMessage(False, self, oth, name))
         oth.active()
+        return self.messages[-1]
 
     def returnTo(self, oth, name = None):
         self.messages.append(self.parent.addMessage(True, self, oth, name))
         self.inactive()
+        return self.messages[-1]
 
     def create(self, oth, proto = None):
         if proto is None: proto = "create"
         self.messages.append(self.parent.addMessage(False, self, oth, "«%s»" % proto))
         oth.constructed_on = self.parent.now()
         self.parent.hstep();
+        return self.messages[-1]
 
     def destroy(self, oth, proto = None):
         if proto is None: proto = "destroy"
         self.messages.append(self.parent.addMessage(False, self, oth, "«%s»" % proto))
         oth.destroyed_on = self.parent.now()
+        return self.messages[-1]
 
     def suicide(self):
         self.inactive()
         self.destroyed_on = self.parent.now()
+
+    def comment(self, text, attach = None):
+        self.pending = self.parent.comment(text, attach)
+        return self.pending
 
     def level_at(self, timestamp):
         max_level = 0

@@ -218,6 +218,50 @@ class _Text(_Graphics, TextGraphics):
         if self.mirrored: scale = -1
         return _SvgTransform().translate(self.x, self.y).scale(scale, 1).set(node)
 
+class _TextArea(_Graphics, TextGraphics):
+    def __init__(self, x, y, w, h, text, clazz = None):
+        _Graphics.__init__(self, x, y, w, h, clazz)
+        self.text = text
+        self.anchor = None
+
+    def alignStart(self):
+        self.anchor = "start"
+
+    def alignMiddle(self):
+        self.anchor = None
+
+    def alignEnd(self):
+        self.anchor = "end"
+
+    def _node(self):
+        text_area = _Graphics._node(self, "textArea")\
+            .attr("width", self.width).attr("height", self.height)\
+            .text(" ".join(self.text.split("\n")))
+
+        text_html = _Graphics._node(self, "p")\
+            .attr("xmlns", "http://www.w3.org/1999/xhtml")\
+            .text(" ".join(self.text.split("\n")))
+
+        text_simple = _Graphics._node(self, "text").text(self.text)
+
+
+        if self.anchor is not None:
+            text_area.style("text-anchor", self.anchor)
+            text_simple.style("text-anchor", self.anchor)
+        scale = 1
+        if self.mirrored: scale = -1
+        tr = _SvgTransform().translate(self.x, self.y).scale(scale, 1);
+
+        sel = _SvgNode("switch")\
+            .add(_SvgNode("g").attr("requiredFeatures", "http://www.w3.org/Graphics/SVG/feature/1.2/#Text").add(tr.set(text_html)))\
+            .add(_SvgNode("g").attr("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#Extensibility").add(tr.set(_SvgNode("foreignObject")\
+                .attr("width", self.width)\
+                .attr("height", self.height)\
+                .add(text_html))))\
+            .add(_SvgNode("g").attr("requiredFeatures", "http://www.w3.org/TR/SVG11/feature/#Text").add(tr.set(text_simple)))\
+
+        return sel
+
 class SvgPredefines(Predefines):
     def __init__(self):
         self.defs = {}
@@ -272,6 +316,11 @@ class SvgCanvas(Canvas, _Graphics):
         return self._add(_Reference(x, y, name, clazz))
     def text(self, x, y, content, clazz = None):
         return self._add(_Text(x, y, content, clazz))
+    def textArea(self, x, y, w, h, content, clazz = None):
+        return self._add(_TextArea(x, y, w, h, content, clazz))
+
+    def title(self, t, w):
+        self.text(w/2, -20, t, "header")
 
     def _node(self):
         node = _Graphics._node(self, "g")
@@ -323,6 +372,9 @@ class SvgPrinter(Printer):
                  .decl("text-anchor", "middle"))\
             .add(Rule("text.object")\
                  .decl("text-decoration", "underline"))\
+            .add(Rule("text.header")\
+                 .decl("font-size", "16pt")\
+                 .decl("font-weight", "bold"))\
             .add(Rule("rect")\
                  .decl("stroke", "black")\
                  .decl("stroke-linecap", "butt")\
@@ -349,6 +401,8 @@ class SvgPrinter(Printer):
                  .decl("stroke", "gray")\
                  .decl("stroke-linecap", "butt")\
                  .decl("fill", "none"))\
+            .add(Rule(".opt-opaque")\
+                 .decl("fill", "#fff"))\
             .add(Rule("polyline.optalt").decl("fill", "#eee"))\
             .add(Rule("text.optalt")\
                  .decl("font-family", "sans-serif")\
@@ -361,7 +415,16 @@ class SvgPrinter(Printer):
                  .decl("font-size", "8pt")\
                  .decl("stroke", "none")\
                  .decl("text-anchor", "start")\
-                 .decl("fill", "#333"))
+                 .decl("fill", "#333"))\
+            .add(Rule(".comment.anchor")\
+                 .decl("stroke", "black")\
+                 .decl("stroke-linecap", "butt")\
+                 .decl("stroke-dasharray", "2, 3")\
+                 .decl("fill", "none"))\
+            .add(Rule("polyline.comment")\
+                 .decl("stroke", "black")\
+                 .decl("stroke-linecap", "butt")\
+                 .decl("fill", "#eee"))
 
         self._defs = SvgPredefines()
         self._canvas = SvgCanvas(0, 0)
@@ -374,7 +437,9 @@ class SvgPrinter(Printer):
         self._canvas.y = margin
         return self._canvas
 
-    def output(self, out):
+    def output(self, out, title = None):
+        if title is None: title = "Sequence diagram"
+        else: title += " sequence diagram"
         svg = _SvgNode("svg") \
             .attr("xmlns", "http://www.w3.org/2000/svg") \
             .attr("version", "1.1") \
@@ -382,7 +447,7 @@ class SvgPrinter(Printer):
             .attr("width", "%.4fin" % (float(self._width)/72)) \
             .attr("height", "%.4fin" % (float(self._height)/72)) \
             .attr("viewBox", "0 0 %s %s" % (self._width, self._height)) \
-            .add(_SvgNode("title").text("SVG Drawing"))\
+            .add(_SvgNode("title").text(title))\
             .add(self._styles._node())\
             .add(self._defs._node())\
             .add(self._canvas._node())

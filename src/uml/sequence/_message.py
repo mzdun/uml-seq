@@ -29,6 +29,9 @@ Created on 02-03-2013
 
 @author: Marcin Zdun
 '''
+
+import _anchor
+
 class Message:
     def __init__(self, isAsync, isReturn, when, start, finish, name):
         self.isAsync = isAsync
@@ -40,15 +43,7 @@ class Message:
 
     def _config(self): return self.start.parent.config
 
-    def printOut(self, parent_canvas):
-        canvas = parent_canvas.canvas(0, self.when + self._config().OBJECT_HEIGHT/2)
-
-        if self.finish.index == self.start.index:
-            self.printOutSelf(canvas)
-        else:
-            self.printOutExchange(canvas)
-
-    def printOutExchange(self, canvas):
+    def _pos(self):
         start = self.start.index
         finish = self.finish.index
         reverse = False
@@ -77,6 +72,34 @@ class Message:
             if reverse: start += self._config().OBJECT_WIDTH/2
             width -= self._config().OBJECT_WIDTH/2 - self._config().STEP_WIDTH/2
 
+        return (start, width, reverse)
+
+    def getAnchor(self, index):
+        y = self.when + self._config().OBJECT_HEIGHT/2
+
+        if self.finish.index == self.start.index:
+            level = self.start.level_at(self.when)
+            depth = (level + 1)* float(self._config().STEP_WIDTH) / 2
+            depth += float(self._config().STEP_WIDTH) / 4
+            return _anchor.boxAnchor(index, 4,
+                depth, y,
+                float(self._config().OBJECT_DISTANCE) / 2,
+                y + float(self._config().STEP_HEIGHT) / 2)
+
+        start, width, reverse = self._pos()
+        return _anchor.getAnchor(index, 1, (start, y), (start + width, y))
+
+    def printOut(self, parent_canvas):
+        canvas = parent_canvas.canvas(0, self.when + self._config().OBJECT_HEIGHT/2)
+
+        if self.finish.index == self.start.index:
+            self.printOutSelf(canvas)
+        else:
+            self.printOutExchange(canvas)
+
+    def printOutExchange(self, canvas):
+        start, width, reverse = self._pos()
+
         if self.name is not None:
             canvas.text(start + float(width)/2, -5.5, self.name)
         clazz = "signal"
@@ -102,13 +125,13 @@ class Message:
             canvas.text(depth, -5.5, self.name).alignStart()
         canvas.poly(depth, 0, "line")\
             .lineTo(float(self._config().OBJECT_DISTANCE) / 2, 0)\
-            .lineTo(float(self._config().OBJECT_DISTANCE) / 2, self._config().STEP_HEIGHT)\
-            .lineTo(depth, self._config().STEP_HEIGHT)
+            .lineTo(float(self._config().OBJECT_DISTANCE) / 2, float(self._config().STEP_HEIGHT) / 2)\
+            .lineTo(depth, float(self._config().STEP_HEIGHT) / 2)
 
         arrow = "signalArrow"
         if self.isAsync: arrow = "asyncSignalArrow"
         #scale(-1, 1)
-        canvas.ref(depth, self._config().STEP_HEIGHT, arrow).mirror()
+        canvas.ref(depth, float(self._config().STEP_HEIGHT) / 2, arrow).mirror()
 
     def __str__(self):
         s = ""

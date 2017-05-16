@@ -39,6 +39,15 @@ class Config:
     STEP_WIDTH = 10
     STEP_HEIGHT = 25
     STEP_OFFSET = 5
+    COMMENT_WIDTH = 150
+    COMMENT_HEIGHT = 75
+    COMMENT_FLAP = 15
+
+class Comment:
+    def attachTo(self, object, node = -1):
+        pass
+    def setWidth(self, width):
+        pass
 
 class Diagram:
     def object(self, name):
@@ -78,6 +87,8 @@ class Object:
     def destroy(self, oth, proto = None):
         pass
     def suicide(self):
+        pass
+    def comment(self, text, attach = None):
         pass
 
 class Block:
