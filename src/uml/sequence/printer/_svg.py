@@ -391,7 +391,8 @@ class SvgPrinter(Printer):
             .add(Rule(".lifeline")\
                  .attach(".return")\
                  .decl("stroke", "black")\
-                 .decl("stroke-dasharray", "5 5"))\
+                 .decl("stroke-dasharray", "5 5")\
+                 .decl("fill", "none"))\
             .add(Rule(".destroy")\
                  .decl("stroke", "black")\
                  .decl("stroke-width", "2")\

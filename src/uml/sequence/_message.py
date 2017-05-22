@@ -120,10 +120,13 @@ class Message:
         depth = (level + 1)* float(self._config().STEP_WIDTH) / 2
         depth += float(self._config().STEP_WIDTH) / 4
 
+        clazz = "signal"
+        if self.isReturn: clazz = "return"
+
         #style="text-anchor:start"
         if self.name is not None:
             canvas.text(depth, -5.5, self.name).alignStart()
-        canvas.poly(depth, 0, "line")\
+        canvas.poly(depth, 0, clazz)\
             .lineTo(float(self._config().OBJECT_DISTANCE) / 2, 0)\
             .lineTo(float(self._config().OBJECT_DISTANCE) / 2, float(self._config().STEP_HEIGHT) / 2)\
             .lineTo(depth, float(self._config().STEP_HEIGHT) / 2)
