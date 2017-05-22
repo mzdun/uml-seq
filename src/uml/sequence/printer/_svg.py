@@ -450,6 +450,11 @@ class SvgPrinter(Printer):
             .add(_SvgNode("title").text(title))\
             .add(self._styles._node())\
             .add(self._defs._node())\
+            .add(_SvgNode("rect")\
+                .attr("width", str(self._width))\
+                .attr("height", str(self._height))\
+                .attr("style", "fill:white;stroke:none")\
+                )\
             .add(self._canvas._node())
         print '<?xml version="1.0" encoding="utf-8" standalone="no"?>'
         svg._print(out, "")

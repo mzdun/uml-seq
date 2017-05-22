@@ -41,7 +41,7 @@ class Activity:
 
     def getAnchor(self, index):
         x = self.level * self.parent.parent.config.STEP_OFFSET - self.parent.parent.config.STEP_WIDTH / 2
-        y = self.start + self.parent._config().OBJECT_HEIGHT/2
+        y = self.start + self.parent._config().OBJECT_HEIGHT/2 + self.parent.constructed_on
         w = self.parent.parent.config.STEP_WIDTH
         h = self.length()
         return _anchor.boxAnchor(index, 4, x, y, x + w, y + h)
